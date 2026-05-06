@@ -4,6 +4,9 @@ const cron= require('node-cron');
 const serviceRoutes= require("./routes/serviceRoutes");
 const middleware= require("./middleware/auth_log");
 const app = express();
+const router= express.Router();
+const auth_log = require('./middleware/auth_log');
+const http= require('http');
 app.use(cors());
 app.use(express.json());
 app.use("/evaluation-service/",(req,res)=>{
