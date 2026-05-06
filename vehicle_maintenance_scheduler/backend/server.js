@@ -1,17 +1,45 @@
-const express= require('express');
-const cors= require("cors")
-const cron= require('node-cron');
-const serviceRoutes= require("./routes/serviceRoutes");
-const middleware= require("./middleware/auth_log");
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const serviceRoutes = require("./routes/serviceRoutes");
+const Log = require("./middleware/auth_log");
+
+dotenv.config();
+
 const app = express();
-const router= express.Router();
-const auth_log = require('./middleware/auth_log');
-const http= require('http');
+const PORT = Number(process.env.PORT || 5000);
+
 app.use(cors());
 app.use(express.json());
-app.use("/evaluation-service/",(req,res)=>{
-     serviceRoutes()
+
+app.use(async (req, res, next) => {
+  await Log(
+    "backend",
+    "info",
+    "middleware",
+    `Incoming request: ${req.method} ${req.originalUrl}`
+  );
+  next();
 });
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+
+app.use("/evaluation-service", serviceRoutes);
+
+app.use(async (req, res) => {
+  await Log(
+    "backend",
+    "warn",
+    "middleware",
+    `Unhandled route requested: ${req.method} ${req.originalUrl}`
+  );
+  res.status(404).json({ message: "Route not found" });
+});
+
+app.listen(PORT, async () => {
+  console.log(`Server running on port ${PORT}`);
+  await Log(
+    "backend",
+    "info",
+    "config",
+    `Backend server started on port ${PORT}`
+  );
 });
